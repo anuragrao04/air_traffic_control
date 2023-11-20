@@ -1,66 +1,48 @@
-#include <stdio.h>
-
-typedef struct flight {
-  // current x y z prositions
-  float x;
-  float y;
-  float z;
-  // current speed and direction
-  float speed;
-  float heading; // 0 to 359 (360 is the same as 0)
-} flight_t;
-
-void collision_avoidance(flight_t *flights[], int num_flights){
-    
-}
-#include <stdio.h>
+#include "../anujna/anujna.h"
+#include "../definitions.h"
 #include <math.h>
+#include <stdio.h>
 
-// Structure to represent an aircraft
-typedef struct {
-    double x, y, z; // Position
-} Aircraft;
-
-// Function to calculate the distance between two aircraft
-double calculateDistance(Aircraft a, Aircraft b) {
-    return sqrt(pow(a.x - b.x, 2) + pow(a.y - b.y, 2) + pow(a.z - b.z, 2));
+// Function to calculate the distance between two positions
+double calculateDistance(position_t *a, position_t *b) {
+  return sqrt(pow(a->x - b->x, 2) + pow(a->y - b->y, 2) + pow(a->z - b->z, 2));
 }
 
-// Function to check for a collision between two aircraft
-int checkCollision(Aircraft a, Aircraft b) {
-    double distance = calculateDistance(a, b);
-    // Assuming a simple collision condition (e.g., a fixed separation distance)
-    double separationDistance = 1000.0; // Adjust as needed
-    return distance < separationDistance;
+int checkCollision(flight_t *a, flight_t *b, float time) {
+  position_t *future_position_a = calc_position(a, time);
+  position_t *future_position_b = calc_position(b, time);
+  double distance = calculateDistance(future_position_a, future_position_b);
+  return distance < MIN_SEPARATION_DISTANCE;
 }
 
-// Function to resolve a collision by adjusting the positions of two aircraft
-void resolveCollision(Aircraft *a, Aircraft *b) {
-    // Implement your collision resolution strategy here
-    // For simplicity, let's assume a basic resolution of moving one aircraft away
-    a->x += 500.0; // Move aircraft 'a' 500 units away
+void resolveCollision(flight_t *a, flight_t *b, int time) {
+  printf("Collision Detected! Flight %d CLIMB! flight %d DESCEND!\t YOU HAVE "
+         "%d SECONDS!\n",
+         a->id, b->id, time); // Move aircraft 'a' 500 units away
 }
 
-int main() {
-    // Example usage with an array of aircraft
-    Aircraft aircraftArray[3] = {
-        {0.0, 0.0, 1000.0},
-        {10.0, 0.0, 1000.0},
-        {20.0, 0.0, 1000.0}
-    };
-
-    // Check for collisions among aircraft
-    for (int i = 0; i < 3; ++i) {
-        for (int j = i + 1; j < 3; ++j) {
-            if (checkCollision(aircraftArray[i], aircraftArray[j])) {
-                printf("Collision detected between aircraft %d and %d!\n", i + 1, j + 1);
-                // Resolve collision
-                resolveCollision(&aircraftArray[i], &aircraftArray[j]);
-                printf("Collision resolved. New position of aircraft%d: %.2f, %.2f, %.2f\n", i + 1,
-                       aircraftArray[i].x, aircraftArray[i].y, aircraftArray[i].z);
-            }
+int collision_found = 0;
+void collision_avoidance(flight_t *flights[], int num_flights) {
+  for (int i = 0; i < num_flights; i++) {
+    for (int j = 0; j < num_flights; j++) {
+      if (i == j) {
+        continue; // a flight can't collide with itself
+      } else {
+        for (int k = 0; k < MIN_WARNING_SECONDS; k++) {
+          if (checkCollision(flights[i], flights[j], k)) {
+            resolveCollision(flights[i], flights[j], k);
+            collision_found = 1;
+            break;
+          }
         }
+      }
+      if (collision_found) {
+        break;
+      }
     }
-
-    return 0;
+    if (collision_found) {
+      collision_found = 0;
+      break;
+    }
+  }
 }

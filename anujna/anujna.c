@@ -1,16 +1,14 @@
-
 #include "../definitions.h"
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 position_t *calc_position(flight_t *flight, float time) {
-    position_t *flights;
-    flights->x=0;
-    flights->y=0;
-    flights->z=0;
-    // scanf("%f",flight->speed);
-    // scanf("%f",flight->heading);
-    flights->x=flight->x;
-    flights->y=flight->y;
-    flights->z=flight->z;
-    
-    return flights;
+  position_t *future_position = malloc(sizeof(position_t));
+  float distance;
+  distance = time * flight->speed;
+  future_position->x = distance * cos(flight->heading) + flight->x;
+  future_position->y = distance * sin(flight->heading) + flight->y;
+  future_position->z = flight->z;
+  return future_position;
 }

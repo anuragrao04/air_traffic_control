@@ -2,11 +2,11 @@ CC = gcc
 
 CFLAGS = -Wall -g -lm
 
-SRCS = main.c anikethan/anikethan.c anujna/anujna.c
+SRCS = main.c anikethan/anikethan.c anujna/anujna.c anurag/anurag.c
 
 OBJS = $(SRCS:.c=.o)
 
-MAIN = whos_your_classmate
+MAIN = air_traffic_control
 
 .PHONY: depend clean
 
